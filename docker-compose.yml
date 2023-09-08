@@ -1,0 +1,60 @@
+version: '3.8'
+
+x-logging:
+  &default-logging
+  driver: json-file
+  options:
+    max-size: '100k'
+    max-file: '1'
+
+networks:
+  shared-services:
+    driver: bridge
+    name: shared-services
+
+services:
+  localstack:
+    image: localstack/localstack
+    ports:
+      - "4566-4599:4566-4599"
+    environment:
+      - AWS_DEFAULT_REGION=us-east-1
+      - EDGE-PORT=4566
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - HOSTNAME=localstack
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    logging:
+      driver: "none"
+    networks:
+      - shared-services
+
+  app:
+    build:
+      context: './app'
+      target: dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./app/index.js:/application/index.js
+    depends_on:
+      - localstack
+    logging: *default-logging
+    networks:
+      - shared-services
+
+  poller-novo-cliente-cadastro-crm:
+    build:
+      context: ./poller
+      target: dev
+    volumes:
+      - ./poller/src:/application/src/
+    environment:
+      - LAMBDA_HOST=http://localhost:3002
+      - LAMBDA_FUNCTION_NAME=NovoClienteCadastroCRMFunction
+      - SNS_TOPIC_NAME=NovoClienteTopic
+      - SQS_QUEUE_NAME=NovoClienteCadastroCrmSQS
+    depends_on:
+      - localstack
+    networks:
+      - shared-services

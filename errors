@@ -1,0 +1,9 @@
+69e9f9debae2:/application/cadastrar-crm# set SAM_CLI_CONTAINER_CONNECTION_TIMEOUT=120
+69e9f9debae2:/application/cadastrar-crm# sam local invoke CadastrarCrmFunction
+Invoking app.lambdaHandler (nodejs16.x)
+Local image is up-to-date
+Using local image: public.ecr.aws/lambda/nodejs:16-rapid-x86_64.
+
+Mounting /application/cadastrar-crm/src as /var/task:ro,delegated, inside runtime container
+Timed out while attempting to establish a connection to the container. You can increase this timeout by setting the
+SAM_CLI_CONTAINER_CONNECTION_TIMEOUT environment variable. The current timeout is 20.0 (seconds).

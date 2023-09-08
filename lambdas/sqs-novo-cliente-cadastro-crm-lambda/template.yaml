@@ -1,0 +1,46 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  sqs-novo-cliente-cadastro-crm-lambda
+
+  Sample SAM Template for sqs-novo-cliente-cadastro-crm-lambda
+  
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 3
+    MemorySize: 128
+
+Resources:
+  NovoClienteTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: 'Tópico novo cliente'
+      TopicName: 'NovoClienteTopic'
+
+  NovoClienteCadastroCrmSQS:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: "NovoClienteCadastroCrmSQS"
+
+  Subscription:
+    Type: 'AWS::SNS::Subscription'
+    Properties:
+      Protocol: sqs
+      TopicArn:
+        Ref: "NovoClienteTopic"
+      Endpoint: !GetAtt NovoClienteCadastroCrmSQS.Arn
+  
+  NovoClienteCadastroCRMFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: hello-world/
+      Handler: app.lambdaHandler
+      Runtime: nodejs16.x
+      Architectures:
+        - x86_64
+    Events:
+      SqsEvento:
+        Type: SQS
+        Properties:
+          Queue: !GetAtt NovoClienteCadastroCrmSQS.Arn
